@@ -1,0 +1,36 @@
+# --- Gradle ---
+.gradle/
+.kotlin/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# --- Android ---
+# Machine-specific SDK path, written by Android Studio
+local.properties
+.externalNativeBuild/
+.cxx/
+captures/
+*.apk
+*.aab
+*.ap_
+*.dex
+
+# --- Signing (never commit keys) ---
+*.jks
+*.keystore
+keystore.properties
+
+# --- Android Studio / IntelliJ ---
+# User-specific IDE files; shared code style and run configs can be added later on purpose
+.idea/
+*.iml
+.navigation/
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Local AI assistant files (kept private) ---
+CLAUDE.md
+.claude/settings.local.json
