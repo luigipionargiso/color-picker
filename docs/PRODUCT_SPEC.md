@@ -1,6 +1,6 @@
 # Product Spec — Color Picker (working title)
 
-> Living document. Last updated: 2026-11-14. Status: Phase 1 (product & design) complete, Phase 2 (project skeleton) next.
+> Living document. Last updated: 2026-11-17. Status: Phase 1 (product & design) complete, Phase 2 (project skeleton) in progress.
 
 ## 1. Vision
 
@@ -34,7 +34,7 @@ An Android **color picker for artists and designers**. Point the camera at anyth
 - Free and open source under **MPL-2.0** (file-level copyleft: our files stay open source, while the app may include files under other licenses, e.g. Mixbox's CC BY-NC 4.0 if paint mixing uses it). The app stays non-commercial: no ads, no paid features.
 - Public GitHub repository from the first commit.
 - No internet permission planned for 1.0 (all data is bundled).
-- Tech stack and tooling: see the approved stack plan (to be moved into `docs/` in Phase 2).
+- Tech stack and tooling: see [TECH_STACK.md](TECH_STACK.md); build setup: see [BUILD.md](BUILD.md).
 
 ## 5. Release 1.0 — scope
 
