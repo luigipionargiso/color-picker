@@ -106,6 +106,7 @@ Check the Kotlin version actually used with `./gradlew buildEnvironment` (look f
 | `org.gradle.configuration-cache=true` | Gradle caches the result of reading the build scripts and skips that phase when they haven't changed. |
 | `org.gradle.parallel=true` | Builds independent modules at the same time. Requires modules that don't configure each other. |
 | `org.gradle.caching=true` | Build cache: reuses task outputs (e.g. compiled classes) from earlier builds, even after `clean` or a branch switch. |
+| `org.gradle.tooling.parallel=true` | Lets Android Studio's Gradle sync fetch project models in parallel (Gradle 9.4+). Added by Android Studio itself; it doesn't affect command-line builds. |
 | `kotlin.code.style=official` | The official Kotlin code style (also enforced by ktlint later). |
 
 ### `gradle/gradle-daemon-jvm.properties`: JDK that runs Gradle
