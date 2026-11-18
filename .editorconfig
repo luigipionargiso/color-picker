@@ -1,0 +1,29 @@
+# Editor settings shared by every IDE, and read by ktlint for Kotlin files.
+# https://editorconfig.org
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{kt,kts}]
+# Match Android Studio's formatter, so "Reformat Code" and ktlint agree.
+ktlint_code_style = android_studio
+max_line_length = 100
+# Composable functions are named like types (PascalCase), e.g. `ColorSwatch()`.
+ktlint_function_naming_ignore_when_annotated_with = Composable
+
+[*.{yml,yaml}]
+indent_size = 2
+
+[*.md]
+# Two trailing spaces are a line break in Markdown.
+trim_trailing_whitespace = false
+
+[*.{bat,cmd}]
+# Windows scripts keep CRLF (see .gitattributes).
+end_of_line = crlf
