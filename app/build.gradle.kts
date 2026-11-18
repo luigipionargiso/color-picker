@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.detekt)
 }
 
 android {
@@ -40,6 +41,19 @@ java {
     }
 }
 
+// Static analysis. Only our changes to detekt's defaults live in the config file.
+detekt {
+    buildUponDefaultConfig = true
+    config.setFrom(rootProject.file("config/detekt/detekt.yml"))
+}
+
+// By default `check` runs the plain `detekt` task, which skips type resolution.
+// Run the type-resolving tasks instead: some Compose rules need it, and detekt finds more with it.
+tasks.named("check") {
+    setDependsOn(dependsOn.filterNot { it is TaskProvider<*> && it.name == "detekt" })
+    dependsOn("detektMain", "detektTest")
+}
+
 dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
@@ -55,4 +69,5 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
+    detektPlugins(libs.compose.rules.detekt)
 }

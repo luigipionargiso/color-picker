@@ -1,0 +1,106 @@
+# Our changes to detekt's default config (`buildUponDefaultConfig = true` in the build).
+# Anything not listed here keeps detekt's default. Each change explains why it exists.
+# Defaults: https://github.com/detekt/detekt/blob/main/detekt-core/src/main/resources/default-detekt-config.yml
+
+naming:
+  FunctionNaming:
+    # Composable functions are named like types (PascalCase), e.g. `ColorSwatch()`.
+    ignoreAnnotated:
+      - 'Composable'
+
+style:
+  UnusedPrivateFunction:
+    # Previews must be private (Compose rule PreviewPublic), and only Android Studio calls them.
+    # Multipreview annotations (e.g. `@PreviewLightDark`) must be added here when we use them.
+    ignoreAnnotated:
+      - 'Preview'
+
+# Compose best practices from https://mrmans0n.github.io/compose-rules/detekt/
+# Plugin rules are off unless enabled here. This list matches compose-rules 0.6.8.
+Compose:
+  ComposableAnnotationNaming:
+    active: true
+  ComposableNaming:
+    active: true
+  ComposableNestingDepth:
+    active: false # Opt-in; deep layouts are reviewed by eye instead.
+  ComposableParamOrder:
+    active: true
+  CompositionLocalAllowlist:
+    active: true
+  CompositionLocalNaming:
+    active: true
+  ConditionHoist:
+    active: true
+  ContentEmitterReturningValues:
+    active: true
+  ContentTrailingLambda:
+    active: true
+  ContentSlotReused:
+    active: true
+  DefaultsVisibility:
+    active: true
+  InvalidReadOnlyComposable:
+    active: true
+  LambdaParameterEventTrailing:
+    active: true
+  LambdaParameterInRestartableEffect:
+    active: true
+  Material2:
+    active: true # Opt-in; turned on because the app uses Material 3 only.
+  MissingNonRestartableComposable:
+    active: true
+  MissingReadOnlyComposable:
+    active: true
+  ModifierClickableOrder:
+    active: true
+  ModifierComposed:
+    active: true
+  ModifierMissing:
+    active: true
+  ModifierNaming:
+    active: true
+  ModifierNotUsedAtRoot:
+    active: true
+  ModifierReused:
+    active: true
+  ModifierShouldBeForwardedToEveryBranch:
+    active: true
+  ModifierWithoutDefault:
+    active: true
+  MultipleEmitters:
+    active: true
+  MutableParams:
+    active: true
+  MutableStateAutoboxing:
+    active: true
+  MutableStateParam:
+    active: true
+  ParameterNaming:
+    active: true
+  PreviewAnnotationNaming:
+    active: true
+  PreviewNaming:
+    active: false # Opt-in; no naming scheme for previews yet.
+  PreviewPublic:
+    active: true
+  RememberContentMissing:
+    active: true
+  RememberMissing:
+    active: true
+  StaleRememberUpdatedStateInRemember:
+    active: true
+  StateParam:
+    active: true
+  UnnecessaryComposable:
+    active: true
+  UnnecessaryLaunchedEffect:
+    active: true
+  UnstableCollections:
+    active: false # Opt-in; not needed with strong skipping, which is on by default.
+  VarsWithoutStateBacking:
+    active: true
+  ViewModelForwarding:
+    active: true
+  ViewModelInjection:
+    active: true
