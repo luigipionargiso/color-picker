@@ -1,5 +1,6 @@
-# Normalize line endings: text files are stored with LF in the repository
-* text=auto
+# Text files use LF everywhere: stored with LF in the repository, and checked out with LF
+# on every machine, whatever core.autocrlf says. This matches .editorconfig and Spotless.
+* text=auto eol=lf
 
 # Shell scripts must keep LF, or they fail on Linux/macOS (e.g. GitHub Actions)
 gradlew text eol=lf
