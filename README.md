@@ -1,5 +1,7 @@
 # Color Picker (working title)
 
+[![CI](https://github.com/luigipionargiso/color-picker/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/luigipionargiso/color-picker/actions/workflows/ci.yml)
+
 An Android color picker for artists and designers. Point the camera at anything (or open a photo), pick a color with pixel precision, learn its name, explore related colors, and collect palettes.
 
 > **Status:** in development. The project skeleton is being set up (Phase 2 of the [development plan](docs/DEVELOPMENT_PLAN.md)); there is no installable build yet.
@@ -25,6 +27,8 @@ Kotlin, Jetpack Compose with Material 3, MVVM with unidirectional data flow, Hil
 | [Product spec](docs/PRODUCT_SPEC.md) | Scope, screens, navigation, color data, roadmap, decision log |
 | [Development plan](docs/DEVELOPMENT_PLAN.md) | Phases and current progress |
 | [Tech stack](docs/TECH_STACK.md) | Libraries, tooling, engineering practices |
+| [Build setup](docs/BUILD.md) | Gradle files, code quality tools, useful commands |
+| [CI](docs/CI.md) | GitHub Actions workflow and the rules on `main` |
 | [Naming](docs/NAMING.md) | App name candidates |
 
 ## License
