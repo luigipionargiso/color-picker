@@ -1,6 +1,6 @@
 # Build Setup
 
-> How the Gradle build is organized and what each file does. Last updated: 2026-11-17 (after the Phase 2 step 4 cleanup). Keep this file in sync whenever a build file changes.
+> How the Gradle build is organized and what each file does. Last updated: 2026-11-24 (Phase 2 step 5: code quality tools). Keep this file in sync whenever a build file changes.
 
 ## How a build runs
 
@@ -56,11 +56,12 @@ The **single place for dependency and plugin versions**.
 
 The Compose libraries (`ui`, `material3`, …) have no version of their own: they get it from **`composeBom`**, a *Bill of Materials* that pins a set of Compose libraries tested together. A module applies it with `platform(libs.androidx.compose.bom)`.
 
-All versions follow the rule in [TECH_STACK.md](TECH_STACK.md): latest **stable** release at the time of the change.
+All versions follow the rule in [TECH_STACK.md](TECH_STACK.md): latest **stable** release at the time of the change. One exception: **detekt** is a 2.0 alpha (see [Code quality](#code-quality)).
 
 ### `build.gradle.kts` (root)
 
 - `plugins { … apply false }` declares the plugins used by the modules: "put them on the build's classpath once, and let each module decide whether to apply them".
+- `alias(libs.plugins.spotless)` (without `apply false`) applies **Spotless** to the root project, and the `spotless { }` block formats the whole repository from here. See [Code quality](#code-quality).
 - `buildscript { dependencies { classpath(libs.kotlin.gradle.plugin) } }` selects the **Kotlin version**. AGP 9 compiles Kotlin itself but bundles an older Kotlin Gradle plugin (2.2.10 in AGP 9.5.1); putting a newer one on the classpath replaces it, as [documented by Google](https://developer.android.com/build/releases/agp-9-0-0-release-notes#runtime-dependency-on-kotlin-gradle-plugin). The Compose compiler plugin uses the same `kotlin` version from the catalog, so the two always match.
 
 Check the Kotlin version actually used with `./gradlew buildEnvironment` (look for `kotlin-gradle-plugin:2.2.10 -> 2.4.21`).
@@ -71,6 +72,7 @@ Check the Kotlin version actually used with `./gradlew buildEnvironment` (look f
 
 - `android.application`: this module builds an app (an APK/AAB). A library module would use `android.library`, and a pure-Kotlin module like `:core:color` will use the Kotlin JVM plugin.
 - `kotlin.compose`: the Compose compiler plugin.
+- `detekt`: static analysis, configured by the `detekt { }` block (see [Code quality](#code-quality)).
 - No separate Kotlin plugin: **AGP 9 compiles Kotlin itself** ("built-in Kotlin"). Older guides apply `org.jetbrains.kotlin.android`; this project doesn't need it.
 
 **`android { … }`**
@@ -86,6 +88,7 @@ Check the Kotlin version actually used with `./gradlew buildEnvironment` (look f
 | `testInstrumentationRunner` | The runner for on-device tests in `src/androidTest`. |
 | `buildTypes { release { optimization { enable = true } } }` | **R8** on the whole app for release builds: code shrinking, optimization, obfuscation and resource shrinking, plus Google's default Android keep rules (AGP 9.3+ DSL, replacing `isMinifyEnabled`, `isShrinkResources` and `proguard-rules.pro`). Keep rules live in `app/src/main/keepRules/`. The template's `packageScope` (optimize only some packages) was removed: Google meant it as a gradual-migration aid for existing apps, and it left our own code unoptimized. Result: the release APK is ~0.8 MB against ~11.7 MB for debug. |
 | `buildFeatures { compose = true }` | Enables Compose in this module. |
+| `lint { … }` | Android Lint settings: warnings fail the build, and the "newer version available" checks are off (see [Code quality](#code-quality)). |
 
 **`java { toolchain { languageVersion = JavaLanguageVersion.of(17) } }`**: the **Java toolchain**. Every machine (yours, CI) compiles with JDK 17, downloaded through foojay if missing, so builds don't depend on whichever JDK happens to be installed. It also sets the Java source/target compatibility and Kotlin's `jvmTarget` to 17, which is why there is no `compileOptions` block. Java 17 bytecode works on every supported Android version (D8 converts it to Android's DEX format); the Java *APIs* available still depend on `minSdk`.
 
@@ -97,6 +100,7 @@ Check the Kotlin version actually used with `./gradlew buildEnvironment` (look f
 | `testImplementation` | JVM unit tests only (`src/test`, run on the computer). |
 | `androidTestImplementation` | Instrumented tests only (`src/androidTest`, run on a phone or emulator). |
 | `debugImplementation` | Debug builds only, e.g. Compose preview tooling, so it never reaches release builds. |
+| `detektPlugins` | Extra detekt rules (the Compose rules). Used only by detekt, never part of the app. |
 
 ### `gradle.properties`: Gradle settings
 
@@ -107,7 +111,7 @@ Check the Kotlin version actually used with `./gradlew buildEnvironment` (look f
 | `org.gradle.parallel=true` | Builds independent modules at the same time. Requires modules that don't configure each other. |
 | `org.gradle.caching=true` | Build cache: reuses task outputs (e.g. compiled classes) from earlier builds, even after `clean` or a branch switch. |
 | `org.gradle.tooling.parallel=true` | Lets Android Studio's Gradle sync fetch project models in parallel (Gradle 9.4+). Added by Android Studio itself; it doesn't affect command-line builds. |
-| `kotlin.code.style=official` | The official Kotlin code style (also enforced by ktlint later). |
+| `kotlin.code.style=official` | Tells Android Studio's formatter to use the official Kotlin coding conventions. ktlint's `android_studio` style (set in `.editorconfig`) follows the same conventions, so **Reformat Code** and ktlint agree. |
 
 ### `gradle/gradle-daemon-jvm.properties`: JDK that runs Gradle
 
@@ -127,13 +131,67 @@ To run `gradlew` from a terminal, `JAVA_HOME` must point to a JDK, for example t
 
 Rules that stop R8 from removing or renaming code that is only reached by reflection (e.g. a WebView JavaScript interface). AGP combines every file in `src/main/keepRules/`. Empty for now.
 
+## Code quality
+
+Four tools check the code. They run on your machine and, from step 6, on every pull request in CI. None of them ships in the app.
+
+| Tool | Checks | Configured in | Run with |
+|---|---|---|---|
+| **Spotless** + **ktlint** | Formatting: indentation, spacing, imports, final newlines. Spotless runs the formatters; ktlint holds the Kotlin rules | root `build.gradle.kts` (`spotless { }`), `.editorconfig` | `./gradlew spotlessCheck` (fails on bad formatting), `./gradlew spotlessApply` (fixes it) |
+| **detekt** | Static analysis: complexity, likely bugs, naming, code smells | `app/build.gradle.kts` (`detekt { }`), `config/detekt/detekt.yml` | `./gradlew detektMain detektTest` (also part of `check`) |
+| **Compose rules** (detekt plugin) | Compose best practices, e.g. every UI component takes a `modifier` parameter, previews are private | the `Compose:` section of `config/detekt/detekt.yml` | runs with detekt |
+| **Android Lint** | Android-specific problems: manifest, resources, API levels, accessibility, security | `app/build.gradle.kts` (`lint { }`) | `./gradlew lint` (also part of `check`) |
+
+Reports are written to `app/build/reports/` (`detekt/` and `lint-results-*.html`).
+
+### `.editorconfig`
+
+Editor settings that every IDE understands: UTF-8, LF line endings, 4-space indent, final newline, no trailing whitespace. It has a few exceptions: YAML uses 2 spaces, Markdown keeps trailing spaces (two of them are a line break), and `.bat`/`.cmd` files use CRLF (as in `.gitattributes`). For Kotlin files it also configures ktlint:
+
+- `ktlint_code_style = android_studio`: the style that matches Android Studio's formatter (ktlint's other styles, `ktlint_official` and `intellij_idea`, differ in details such as trailing commas).
+- `max_line_length = 100`: the same line length for ktlint and the IDE.
+- `ktlint_function_naming_ignore_when_annotated_with = Composable`: composable functions are named like types (`ColorSwatch()`), not like functions.
+
+### Spotless
+
+Spotless is applied once at the root and formats the whole repository: Kotlin sources, Gradle scripts, and a `misc` group (version catalog, YAML, `.gitignore`, `.gitattributes`, `.editorconfig`) that only gets trailing whitespace removed and a final newline added. Markdown is left out on purpose.
+
+The targets name the folders explicitly (`*/src/**/*.kt`, `*/*/src/**/*.kt`, …) instead of `**/*.kt`. Spotless lists its target files while Gradle configures the build, and the configuration cache records what that walk touches. A `**` walk from the root also enters `.gradle/`, and on Windows that fails on lock files the Gradle daemon keeps open (`Failed to create MD5 hash for file … checksums.lock`). A module nested deeper than two folders needs a new pattern.
+
+### detekt
+
+- **Version: 2.0.0-alpha.6, pinned.** This is an exception to the "latest stable" rule. The stable detekt 1.23.8 (Feb 2025) supports neither AGP 9's built-in Kotlin nor Kotlin 2.4, and the Compose rules 0.6.x are built against the 2.0 alphas. detekt never ships in the app, so an alpha can only break the build. If it does, the fallback is to drop detekt and run the Compose rules through ktlint. Move to 2.0 stable when it's released ([releases](https://github.com/detekt/detekt/releases), [compatibility table](https://detekt.dev/docs/introduction/compatibility/)).
+- `buildUponDefaultConfig = true`: detekt starts from its [default config](https://github.com/detekt/detekt/blob/main/detekt-core/src/main/resources/default-detekt-config.yml). `config/detekt/detekt.yml` contains **only our changes**, each with a comment explaining why.
+- **Our changes so far**: `FunctionNaming` ignores `@Composable` functions (PascalCase names), and `UnusedPrivateFunction` ignores `@Preview` functions (they must be private, and only Android Studio calls them). Multipreview annotations like `@PreviewLightDark` will need to be added there.
+- **The Compose rules** ([docs](https://mrmans0n.github.io/compose-rules/detekt/)) are off unless listed, so the `Compose:` section lists every rule of version 0.6.8. When updating compose-rules, compare that list with the new docs: detekt rejects config keys it doesn't know.
+- **Tasks.** detekt has several tasks:
+  - `detekt`: no type resolution, so it finds less.
+  - `detektMain`: all production variants, with type resolution.
+  - `detektTest`: all test variants, with type resolution.
+  - `detekt<Variant>`: one variant, with type resolution.
+
+  `check` normally runs `detekt`. `app/build.gradle.kts` changes it to run `detektMain` and `detektTest`, because type resolution finds more, and some Compose rules need it.
+- **Known warning**: "Deprecated Gradle features were used" comes from the detekt plugin itself (`Configuration.setVisible`, removed in Gradle 11), not from our scripts.
+
+### Android Lint
+
+- `warningsAsErrors = true`: a warning fails the build, so warnings get fixed instead of piling up in a report nobody reads.
+- `abortOnError = true`: errors stop the build. This is the default, written out to make the intent clear.
+- `GradleDependency`, `NewerVersionAvailable` and `AndroidGradlePluginVersion` are disabled. They only say "a newer version exists". With `warningsAsErrors` they would fail the build whenever a library releases a new version, even though our code didn't change. Updating dependencies is a separate job.
+- `check` runs `lintDebug`. Release builds also run `lintVitalRelease` automatically (a shorter list of fatal checks).
+
+### When a rule is wrong for one place
+
+Prefer fixing the code. When a rule really doesn't fit, suppress it for that single declaration, with a reason: `@Suppress("RuleName") // why`. Disable a rule for the whole project only in `detekt.yml` or `lint { }`, with a comment, as above.
+
 ## Useful commands
 
 ```bash
 ./gradlew assembleDebug      # build a debug APK
 ./gradlew installDebug       # build and install on the connected phone
 ./gradlew test               # run JVM unit tests
-./gradlew check              # all verification tasks (tests, lint; later formatting and detekt)
+./gradlew spotlessApply      # format the code
+./gradlew check              # all verification tasks: unit tests, detekt, lint, formatting
 ./gradlew dependencies --configuration releaseRuntimeClasspath   # what the release app ships
 ```
 

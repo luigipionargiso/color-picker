@@ -189,3 +189,4 @@ All conversion and color math lives in a pure-Kotlin `:core:color` module with u
 | 2026-11-14 | Positioning: "for artists and designers". 1.1 = comparison + grey-card calibration; designer features later; paint mixing study postponed. |
 | 2026-11-14 | The app will be free and open source. |
 | 2026-11-14 | License: MPL-2.0 (keeps the code open source, compatible with including Mixbox). Repository public from the first commit. |
+| 2026-11-24 | Code quality: detekt pinned to 2.0.0-alpha.6, an exception to the "latest stable" rule (the stable 1.23 doesn't support AGP 9 or Kotlin 2.4). It is a build-only tool; move to 2.0 stable on release. |

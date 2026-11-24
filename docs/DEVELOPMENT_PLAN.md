@@ -26,7 +26,7 @@
 | 2 | **Create the Android project** with Android Studio's *Empty Activity* template: working name "Color Picker", package `io.github.luigipionargiso.colorpicker`, minSdk 26, Kotlin DSL. Run it on the phone | Developer | 1 | ✅ 2026-11-15 |
 | 3 | **Guided tour** of the generated files: Gradle files, version catalog, manifest, `MainActivity`, theme. Gradle part recorded in [BUILD.md](BUILD.md) | Claude explains | 1 | ✅ 2026-11-17 |
 | 4 | **Build setup cleanup**: latest stable versions (Kotlin 2.4.21, Compose BOM 2026.09.00, Gradle 9.9.1), SDK 37, Java 17 toolchain, R8 on the whole app, parallel builds + build cache, remove template leftovers | Claude | 1 | ✅ 2026-11-17 |
-| 5 | **Code quality tools**: Spotless + ktlint, detekt + Compose rules, Android Lint, `.editorconfig` | Claude | 2 | |
+| 5 | **Code quality tools**: Spotless + ktlint, detekt + Compose rules, Android Lint, `.editorconfig`. Recorded in [BUILD.md](BUILD.md#code-quality) | Claude | 2 | ✅ 2026-11-24 |
 | 6 | **CI**: GitHub Actions on every PR and push to `main` (formatting, detekt, lint, unit tests, debug build); protect `main` (PR + green CI required) | Claude writes the workflow; developer sets branch protection | 2 | |
 | 7 | **`:core:color` module** (pure Kotlin): first function (HEX parsing) and first unit test | Developer, guided | 3 | |
 | 8 | **Architecture skeleton**: Hilt, package structure, Navigation 3 with a placeholder for every screen | Claude boilerplate; developer writes one placeholder screen | 4 | |
