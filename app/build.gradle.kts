@@ -31,6 +31,14 @@ android {
     buildFeatures {
         compose = true
     }
+    lint {
+        // Warnings fail the build too, so they get fixed instead of piling up.
+        warningsAsErrors = true
+        abortOnError = true
+        // "A newer version is available" checks: dependency updates are a separate job,
+        // and the build shouldn't start failing just because a library released a new version.
+        disable += setOf("GradleDependency", "NewerVersionAvailable", "AndroidGradlePluginVersion")
+    }
 }
 
 // Compile Java and Kotlin with JDK 17 on every machine (downloaded through foojay if missing).
