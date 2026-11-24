@@ -1,6 +1,6 @@
 # Tech Stack & Tooling
 
-> Approved 2026-11-09, updated 2026-11-14. Exact library versions live in `gradle/libs.versions.toml` (latest stable at setup time).
+> Approved 2026-11-09, updated 2026-11-24. Exact library versions live in `gradle/libs.versions.toml` (latest stable at setup time; the one exception is detekt, see below).
 
 ## App
 
@@ -27,7 +27,7 @@
 ## Engineering practices
 
 - **Build**: Gradle Kotlin DSL, version catalog, **KSP** (Hilt, Room).
-- **Code quality**: **Spotless + ktlint** (formatting), **detekt** + Compose rules (static analysis), Android Lint, `.editorconfig`.
+- **Code quality**: **Spotless + ktlint** (formatting, ktlint's `android_studio` style), **detekt** + Compose rules (static analysis), Android Lint (warnings as errors), `.editorconfig`. detekt is pinned to a **2.0 alpha**, because the stable 1.23 doesn't support AGP 9 or Kotlin 2.4. Details in [BUILD.md](BUILD.md#code-quality).
 - **Testing**: JUnit + Google Truth + **Turbine** (Flow), hand-written fakes over mocks; Compose UI tests; **Roborazzi** screenshot tests (Phase 5).
 - **Git workflow**: public GitHub repo, protected `main`, short feature branches, pull requests, Conventional Commits.
 - **CI/CD**: **GitHub Actions** — on every PR: formatting, detekt, lint, unit tests, debug build. Later: signed release AAB on tag.
